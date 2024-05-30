@@ -6,7 +6,7 @@
 #include <linux/kthread.h>
 #include <linux/delay.h>
 
-#define BUTTON_GPIO 17  // Example GPIO pin number, change as necessary
+#define BUTTON_GPIO 22
 
 static int irq_number;
 static int button_state = 0;
