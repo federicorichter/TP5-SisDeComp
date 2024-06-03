@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import time
 
-BUTTON_GPIO = "17"
+BUTTON_GPIO = "539"
 
 def read_button_state():
     with open(f"/sys/class/gpio/gpio{BUTTON_GPIO}/value", "r") as file:
