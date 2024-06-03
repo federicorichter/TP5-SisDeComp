@@ -9,8 +9,8 @@
 #include <linux/uaccess.h>
 #include <linux/miscdevice.h> 
 
-#define GPIO1 539
-#define GPIO2 540
+#define GPIO1 538
+#define GPIO2 539
 
 static int irq_number1, irq_number2;
 static int button_state = 0;
@@ -37,9 +37,9 @@ static ssize_t gpio_select_write(struct file *file, const char __user *buf, size
     if (copy_from_user(kbuf, buf, count)) return -EFAULT;
     kbuf[count] = '\0';
 
-    if (strcmp(kbuf, "539") == 0) {
+    if (strcmp(kbuf, "538") == 0) {
         selected_gpio = GPIO1;
-    } else if (strcmp(kbuf, "540") == 0) {
+    } else if (strcmp(kbuf, "539") == 0) {
         selected_gpio = GPIO2;
     } else {
         return -EINVAL;

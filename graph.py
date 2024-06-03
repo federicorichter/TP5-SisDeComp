@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 
 # Define initial GPIO pin to read
-BUTTON_GPIO = "539"
+BUTTON_GPIO = "538"
 
 def read_button_state():
     try:
@@ -57,8 +57,8 @@ root = tk.Tk()
 root.title("GPIO Button Selector")
 
 # Create buttons for selecting GPIO pins
-button_1 = ttk.Button(root, text="GPIO 539", command=lambda: set_gpio("539"))
-button_2 = ttk.Button(root, text="GPIO 540", command=lambda: set_gpio("540"))
+button_1 = ttk.Button(root, text="GPIO 538", command=lambda: set_gpio("538"))
+button_2 = ttk.Button(root, text="GPIO 539", command=lambda: set_gpio("539"))
 
 button_1.pack(side=tk.LEFT, padx=10, pady=10)
 button_2.pack(side=tk.LEFT, padx=10, pady=10)
