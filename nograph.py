@@ -1,7 +1,7 @@
 import time
 
 GPIO1 = "539"
-GPIO2 = "540"
+GPIO2 = "538"
 
 def read_button_state(gpio_number):
     with open(f"/sys/class/gpio/gpio{gpio_number}/value", "r") as file:
@@ -11,6 +11,8 @@ def select_gpio():
     while True:
         selection = input(f"Select GPIO pin ({GPIO1}/{GPIO2}): ").strip()
         if selection in [GPIO1, GPIO2]:
+            with open("/dev/gpio_select", "w") as file:
+                file.write(selection)
             return selection
         print(f"Invalid selection. Please choose {GPIO1} or {GPIO2}.")
 
