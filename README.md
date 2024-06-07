@@ -241,3 +241,8 @@ start_button.pack(side=tk.LEFT, padx=10, pady=10)
 root.mainloop()
 
 ```
+
+## Video demostración
+
+Debido a que la placa se reiniciaba cada vez que intentabamos descargar la librería para graficar, creamos otro script llamado nograph.py que solo imprime las lecturas en la terminal:
+
