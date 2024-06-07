@@ -122,10 +122,14 @@ static int button_thread(void *arg) {
 Para finalizar este primer paso de inicialización designamos los números mayor y menor de nuestro nuevo driver, correspondientes al tipo de módulo y su "instancia", que luego utlizaremos para levantar el driver como un dispositivo de caracteres.
 
 ```c
- // Asignar número mayor y menor para el dispositivo de caracteres
-    dev_num = MKDEV(MAJOR_NUM, MINOR_NUM);
-    result = register_chrdev_region(dev_num, 1, DEVICE_NAME);
-    if (result < 0) {
+    // Registra una región de dispositivos de caracteres utilizando la función alloc_chrdev_region.
+    // Esta función asigna un número de dispositivo mayor y menor para el controlador de dispositivo.
+    // Si la asignación es exitosa, se guarda el número de dispositivo mayor y menor en las variables major y minor
+    // respectivamente. Si la asignación falla, se imprime un mensaje de error y se realiza la limpieza necesaria antes
+    // de devolver el resultado negativo.
+    result = alloc_chrdev_region(&dev_num, 0, 1, DEVICE_NAME);
+    if (result < 0)
+    {
         printk(KERN_ERR "Failed to register char device region: %d\n", result);
         kthread_stop(task);
         free_irq(irq_number1, NULL);
@@ -134,12 +138,15 @@ Para finalizar este primer paso de inicialización designamos los números mayor
         gpio_free(GPIO2);
         return result;
     }
+    int major = MAJOR(dev_num);
+    int minor = MINOR(dev_num);
 
     // Inicializar y agregar el dispositivo de caracteres
     cdev_init(&gpio_select_cdev, &fops);
     gpio_select_cdev.owner = THIS_MODULE;
     result = cdev_add(&gpio_select_cdev, dev_num, 1);
-    if (result < 0) {
+    if (result < 0)
+    {
         printk(KERN_ERR "Failed to add char device: %d\n", result);
         unregister_chrdev_region(dev_num, 1);
         kthread_stop(task);
