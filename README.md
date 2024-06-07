@@ -122,14 +122,10 @@ static int button_thread(void *arg) {
 Para finalizar este primer paso de inicialización designamos los números mayor y menor de nuestro nuevo driver, correspondientes al tipo de módulo y su "instancia", que luego utlizaremos para levantar el driver como un dispositivo de caracteres.
 
 ```c
-    // Registra una región de dispositivos de caracteres utilizando la función alloc_chrdev_region.
-    // Esta función asigna un número de dispositivo mayor y menor para el controlador de dispositivo.
-    // Si la asignación es exitosa, se guarda el número de dispositivo mayor y menor en las variables major y minor
-    // respectivamente. Si la asignación falla, se imprime un mensaje de error y se realiza la limpieza necesaria antes
-    // de devolver el resultado negativo.
-    result = alloc_chrdev_region(&dev_num, 0, 1, DEVICE_NAME);
-    if (result < 0)
-    {
+ // Asignar número mayor y menor para el dispositivo de caracteres
+    dev_num = MKDEV(MAJOR_NUM, MINOR_NUM);
+    result = register_chrdev_region(dev_num, 1, DEVICE_NAME);
+    if (result < 0) {
         printk(KERN_ERR "Failed to register char device region: %d\n", result);
         kthread_stop(task);
         free_irq(irq_number1, NULL);
@@ -138,15 +134,12 @@ Para finalizar este primer paso de inicialización designamos los números mayor
         gpio_free(GPIO2);
         return result;
     }
-    int major = MAJOR(dev_num);
-    int minor = MINOR(dev_num);
 
     // Inicializar y agregar el dispositivo de caracteres
     cdev_init(&gpio_select_cdev, &fops);
     gpio_select_cdev.owner = THIS_MODULE;
     result = cdev_add(&gpio_select_cdev, dev_num, 1);
-    if (result < 0)
-    {
+    if (result < 0) {
         printk(KERN_ERR "Failed to add char device: %d\n", result);
         unregister_chrdev_region(dev_num, 1);
         kthread_stop(task);
@@ -176,4 +169,68 @@ static ssize_t gpio_select_write(struct file *file, const char __user *buf, size
     }
     return count;
 }
+```
+
+## Graficador
+
+A nivel de usuario era requerido determinar qué pin se lee y graficarlo, por lo que se diseño un script en Python utilizando Matplotlib para la graficación y tkinter para la interfaz gráfica donde el usuario de la aplicación selecciona uno de los dos pines disponibles.
+
+![image](https://github.com/federicorichter/TP5-SisDeComp/assets/82000054/3f1eef3a-41b5-43bc-b90a-f0a825248ef0)
+
+Utilizando la librería tkinter creamos los botones y la pantalla, cuando uno de los botones correspondientes a los pines es presionado, se llama a la función set_gpio, la cual a su vez llama a write_gpio_select que escribe en el file system el archivo donde se indica al módulo qué pin leer.
+
+```python
+def write_gpio_select(gpio_pin):
+    with open("/dev/gpio_select", "w") as file:
+        file.write(gpio_pin)
+def set_gpio(gpio_pin):
+    global BUTTON_GPIO
+    BUTTON_GPIO = gpio_pin
+    write_gpio_select(gpio_pin)
+    x_data.clear()
+    y_data.clear()
+    start_time = time.time()
+
+```
+
+Luego que el botón de Start Plot es presionado se comenzará a dibujar el gráfico utilizando los datos leídos por la función read_button_state y actualizándose de manera paulatina gracias a la función update que llama a read_button_state periódicamente.
+
+```python
+def read_button_state():
+    try:
+        with open(f"/sys/class/gpio/gpio{BUTTON_GPIO}/value", "r") as file:
+            return int(file.read().strip())
+    except FileNotFoundError:
+        return 0  # Default state if file not found
+
+def update(frame):
+    current_time = time.time() - start_time
+    x_data.append(current_time)
+    y_data.append(read_button_state())
+    line.set_data(x_data, y_data)
+    ax.set_xlim(0, max(10, current_time + 1))
+    return line,
+def start_animation():
+    global start_time
+    start_time = time.time()
+    ani = animation.FuncAnimation(fig, update, init_func=init, blit=True, interval=200)
+    plt.show()
+
+root = tk.Tk()
+root.title("GPIO Button Selector")
+
+# Create buttons for selecting GPIO pins
+button_1 = ttk.Button(root, text="GPIO 538", command=lambda: set_gpio("538"))
+button_2 = ttk.Button(root, text="GPIO 539", command=lambda: set_gpio("539"))
+
+button_1.pack(side=tk.LEFT, padx=10, pady=10)
+button_2.pack(side=tk.LEFT, padx=10, pady=10)
+
+# Create a button to start the animation
+start_button = ttk.Button(root, text="Start Plot", command=start_animation)
+start_button.pack(side=tk.LEFT, padx=10, pady=10)
+
+# Run the GUI event loop
+root.mainloop()
+
 ```
