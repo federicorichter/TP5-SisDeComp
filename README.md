@@ -246,3 +246,5 @@ root.mainloop()
 
 Debido a que la placa se reiniciaba cada vez que intentabamos descargar la librería para graficar, creamos otro script llamado nograph.py que solo imprime las lecturas en la terminal:
 
+https://github.com/federicorichter/TP5-SisDeComp/blob/master/WhatsApp%20Video%202024-06-03%20at%2017.08.28.mp4
+
